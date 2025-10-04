@@ -309,7 +309,6 @@ class ResearchRagRepository:
                 pmc_id = rec.get("PMCID")
                 if pmc_id:
                     pmc_ids.append(pmc_id)
-            print(f"PMC_IDS: {pmc_ids}")
             return self._fetch_researches_ordered(pmc_ids)
 
         # 3) 재랭킹 비활성화 시: dense 결과 상위 k개 반환
@@ -320,7 +319,6 @@ class ResearchRagRepository:
             pmc_id = rec.get('PMCID')
             if pmc_id:
                 pmc_ids.append(pmc_id)
-        print(f"PMC_IDS: {pmc_ids}")
         return self._fetch_researches_ordered(pmc_ids)
 
 
