@@ -1,10 +1,13 @@
-from fastapi import APIRouter, status, Query, Depends, HTTPException
+from fastapi import APIRouter, status, Query, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
 
 from db.db import get_db_session
-from dto.hypothesis_dto import HypothesisResponses
+from dto.hypothesis_dto import HypothesisResponses, HypothesisCreateResponse, HypothesisCreateRequest
 from repository.hypothesis_repository import HypothesisRepository
 from repository.hypothesis_reserach_repository import HypothesisResearchRepository
+from repository.research_gaps_repository import ResearchGapsRepository
+from prompt.resolver.hypothesis_prompt_resolver import HypothesisPromptResolver
+from client.open_ai_client import OpenAiClient
 from service.hypothesis_service import HypothesisService
 
 router = APIRouter(
@@ -13,6 +16,15 @@ router = APIRouter(
     responses={status.HTTP_404_NOT_FOUND: {"description": "Not found"}}
 
 )
+
+
+@router.post(
+    path="",
+    summary = "Research Gap을 조합해 가설 만들기",
+    response_model = HypothesisCreateResponse
+)
+def create_hypothesis(request: HypothesisCreateRequest = Body(...)):
+    return HypothesisCreateResponse()
 
 @router.get(
     "/me",
@@ -25,5 +37,15 @@ def get_my_hypothesis(
 ):
     hypothesis_repository = HypothesisRepository(db)
     hypothesis_research_repository = HypothesisResearchRepository(db)
-    hypothesis_service = HypothesisService(hypothesis_repository, hypothesis_research_repository)
+    research_gaps_repository = ResearchGapsRepository(db)
+    prompt_resolver = HypothesisPromptResolver()
+    openai_client = OpenAiClient(prompt_resolver)
+
+    hypothesis_service = HypothesisService(
+        hypothesis_repository,
+        hypothesis_research_repository,
+        research_gaps_repository,
+        openai_client
+    )
     return hypothesis_service.get_my_hypothesis(userId)
+
