@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from fastapi.testclient import TestClient
 
 from repository.hypothesis_repository import HypothesisRepository
-from repository.hypothesis_reserach_repository import HypothesisResearchRepository
+from repository.hypothesis_research_repository import HypothesisResearchRepository
 from repository.research_gaps_repository import ResearchGapsRepository
 from prompt.resolver.hypothesis_prompt_resolver import HypothesisPromptResolver
 from client.open_ai_client import OpenAiClient
