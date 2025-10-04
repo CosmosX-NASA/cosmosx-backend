@@ -2,7 +2,7 @@
 import db.db #db 초기화
 from fastapi import FastAPI
 from apis.ping_api import router as ping_router
-from apis.research_gaps_api import router as research_gaps_router
+from apis.research_api import router as research_gaps_router
 from apis.hypothesis_api import router as hypothesis_router
 from exception.handlers import register_exception_handlers
 
