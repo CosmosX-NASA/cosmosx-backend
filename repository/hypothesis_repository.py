@@ -6,8 +6,15 @@ class HypothesisRepository:
         self.db = db
 
     def get_by_userId(self, userid : int) -> list[Hypothesis]:
-        return (self.db.query(Hypothesis)
-                .filter(Hypothesis.user_id.is_(userid))
-                .all())
+        return (
+            self.db.query(Hypothesis)
+                .filter(Hypothesis.user_id == userid)
+                .all()
+        )
 
+
+    def save(self, hypo: Hypothesis) -> Hypothesis:
+        self.db.add(hypo)
+        self.db.flush()
+        return hypo
 

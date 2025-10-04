@@ -1,8 +1,8 @@
-from fastapi import APIRouter, status, Query, Depends, HTTPException
+from fastapi import APIRouter, status, Query, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
 
 from db.db import get_db_session
-from dto.hypothesis_dto import HypothesisResponses
+from dto.hypothesis_dto import HypothesisResponses, HypothesisCreateResponse, HypothesisCreateRequest
 from repository.hypothesis_repository import HypothesisRepository
 from repository.hypothesis_reserach_repository import HypothesisResearchRepository
 from service.hypothesis_service import HypothesisService
@@ -13,6 +13,14 @@ router = APIRouter(
     responses={status.HTTP_404_NOT_FOUND: {"description": "Not found"}}
 
 )
+
+
+@router.post(
+    summary = "Research Gap을 조합해 가설 만들기",
+    response_model = HypothesisCreateResponse
+)
+def create_hypothesis(request: HypothesisCreateRequest = Body(...)):
+    return HypothesisCreateResponse()
 
 @router.get(
     "/me",
@@ -27,3 +35,4 @@ def get_my_hypothesis(
     hypothesis_research_repository = HypothesisResearchRepository(db)
     hypothesis_service = HypothesisService(hypothesis_repository, hypothesis_research_repository)
     return hypothesis_service.get_my_hypothesis(userId)
+
