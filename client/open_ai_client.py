@@ -5,7 +5,7 @@ from model import ResearchWithGaps
 from typing import List
 from prompt.resolver.hypothesis_prompt_resolver import HypothesisPromptResolver
 from dto.hypothesis_dto import HypothesisAiResponse
-from util import JsonDecoder
+from util.json_decoder import JsonDecoder
 
 load_dotenv()
 
@@ -22,7 +22,7 @@ class OpenAiClient:
             messages=[{"role": "user", "content": prompt}]
         )
         raw_response = response.choices[0].message.content
-        print(raw_response)
+        print("응답 : " + raw_response)
         decoded = JsonDecoder.decode(raw_response, HypothesisAiResponse)
         if decoded is None:
             raise ValueError(f"OpenAI response could not be parsed as HypothesisAiResponse: {raw_response}")
