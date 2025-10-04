@@ -10,5 +10,7 @@ class HypothesisPromptResolver:
         return path.read_text(encoding="utf-8")
 
     def resolve(self, research_with_gaps : List[ResearchWithGaps]) -> str:
-        return self._load_prompt("prompt/create_hypothesis_prompt.txt")
+        prompt = self._load_prompt("../create_hypothesis_prompt.txt")
+        print(prompt) # 로깅
+        return prompt
 
