@@ -1,4 +1,5 @@
 
+import db.db #db 초기화
 from fastapi import FastAPI
 from apis.ping_api import router as ping_router
 from exception.handlers import register_exception_handlers
