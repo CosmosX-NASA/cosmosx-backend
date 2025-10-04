@@ -1,0 +1,12 @@
+2025-10-05 00:00:35 - log.log - ERROR - handlers.py:57 - unhandled_exception - code=INTERNAL_SERVER_ERROR path=/api/researchs context={'error': "ResearchRagRepository.__init__() missing 1 required positional argument: 'csv_path'"}
+2025-10-05 00:04:53 - log.log - ERROR - handlers.py:57 - unhandled_exception - code=INTERNAL_SERVER_ERROR path=/api/researchs context={'error': "ResearchRagRepository._l2_normalize() got multiple values for argument 'axis'"}
+2025-10-05 00:10:36 - log.log - ERROR - handlers.py:57 - unhandled_exception - code=INTERNAL_SERVER_ERROR path=/api/researchs context={'error': "ResearchRagRepository._l2_normalize() got multiple values for argument 'axis'"}
+2025-10-05 00:26:54 - log.log - ERROR - handlers.py:57 - unhandled_exception - code=INTERNAL_SERVER_ERROR path=/api/researchs context={'error': "ResearchRagRepository._l2_normalize() missing 1 required positional argument: 'a'"}
+2025-10-05 00:37:09 - log.log - ERROR - handlers.py:57 - unhandled_exception - code=INTERNAL_SERVER_ERROR path=/api/researchs context={'error': "'dict' object has no attribute 'id'"}
+2025-10-05 00:39:52 - log.log - INFO - <stdin>:10 - hello world - code=- path=- context=-
+2025-10-05 00:47:23 - adapters.model_mixin - WARNING - model_mixin.py:1404 - There are adapters available but none are activated for the forward pass. - code=- path=- context=-
+2025-10-05 00:48:33 - log.log - ERROR - <stdin>:11 - boom - code=C path=/x context={'a': 1}
+2025-10-05 00:50:00 - root - INFO - <stdin>:4 - root log direct - code=- path=- context=-
+2025-10-05 00:50:11 - root - INFO - <stdin>:10 - direct root - code=- path=- context=-
+2025-10-05 00:51:17 - log.log - INFO - <stdin>:10 - hello world - code=- path=- context=-
+2025-10-05 00:51:17 - log.log - ERROR - <stdin>:11 - boom - code=C path=/x context={'a': 1}
