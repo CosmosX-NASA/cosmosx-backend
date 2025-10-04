@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from .db_base import db_base
 
 # 모델을 메타데이터에 등록하기 위해 import가 필요.
-from model import Research, Figure, ResearchGap  # noqa: F401
+from model import Research, Figure, ResearchGap, Hypothesis, HypothesisResearch  # noqa: F401
 
 
 # 2. 데이터베이스 URL 설정 using absolute path

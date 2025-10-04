@@ -9,7 +9,7 @@ class Figure(db_base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True, comment="논문 PK")
     url = Column(String, unique=True, nullable=False, comment = "이미지 url")
-    caption = Column(String, unique=True, nullable=False, comment = "이미지 캡션")
+    caption = Column(String, unique=True, nullable=True, comment = "이미지 캡션")
     research_id = Column(Integer, nullable=False, comment= "연구 논문 id")
 
     def __init__(self, **kwargs):

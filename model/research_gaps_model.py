@@ -8,8 +8,8 @@ class ResearchGap(db_base):
     __tablename__ = "research_gaps"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True, comment="논문 간극 PK")
-    type = Column(String(20), unique=True, nullable=False, comment = "간극 type ex) CONECEPTUAL")
-    content = Column(String, unique=True, nullable=False, comment = "간극 내용")
+    type = Column(String(20), nullable=False, comment = "간극 type ex) CONECEPTUAL")
+    content = Column(String, nullable=False, comment = "간극 내용")
     evidence = Column(Integer, nullable=False, comment= "간극 추출 근거")
     research_title = Column(String(255), nullable=False, comment= "논문 제목")
     research_id = Column(Integer, nullable=False, comment= "연구 논문 id")
