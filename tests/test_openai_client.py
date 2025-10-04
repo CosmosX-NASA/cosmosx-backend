@@ -11,7 +11,8 @@ from dotenv import load_dotenv
 @pytest.fixture
 def mock_prompt_resolver():
     resolver = MagicMock(spec=HypothesisPromptResolver)
-    resolver.resolve.return_value = "PROMPT CONTENT"
+    resolver.resolve_hypothesis_create_prompt.return_value = "PROMPT CONTENT"
+    resolver.resolve_specify_question_prompt.return_value = "PROMPT CONTENT"
     return resolver
 
 
@@ -22,8 +23,7 @@ def mock_openai_client(monkeypatch):
     mock_response = MagicMock()
     # OpenAI 반환 객체 구조 맞추기
     mock_response.choices = [MagicMock()]
-    mock_response.choices[
-        0].message.content = '{"statement":"Test stmt","usage":"Test usage","evidence":"Test evidence"}'
+    mock_response.choices[0].message.content = '{"statement":"Test stmt","usage":"Test usage","evidence":"Test evidence"}'
     mock_client.chat.completions.create.return_value = mock_response
 
     from client import open_ai_client
@@ -86,7 +86,7 @@ def test_create_hypothesis_success(mock_prompt_resolver, mock_openai_client):
     assert result.evidence == "Test evidence"
 
     # prompt resolver가 호출되었는지 확인
-    mock_prompt_resolver.resolve.assert_called_once_with(research_gaps_list)
+    mock_prompt_resolver.resolve_hypothesis_create_prompt.assert_called_once_with(research_gaps_list)
 
     # OpenAI API가 호출되었는지 확인
     mock_openai_client.chat.completions.create.assert_called_once()
@@ -122,3 +122,17 @@ def test_create_hypothesis_real():
 
     assert isinstance(result, HypothesisAiResponse)
     print("AI Response:", result)
+
+
+@pytest.mark.skip(reason="실제 OpenAI 호출 테스트이므로 현재는 건너뜀")
+def test_specify_question_real_call():
+    resolver = HypothesisPromptResolver()
+
+    client = OpenAiClient(prompt_resolver=resolver)
+    keyword = "biology"
+    response = client.specify_question(keyword)
+
+    print("OpenAI response:", response)
+    # 최소한 응답이 문자열이고 비어있지 않은지 확인
+    assert isinstance(response, str)
+    assert len(response.strip()) > 0
