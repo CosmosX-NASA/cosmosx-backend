@@ -1,10 +1,10 @@
-from typing import Optional, List
-from dto.hypothesis_dto import HypothesisResponse, HypothesisResponses, HypothesisResponse, HypothesisCreateRequest, HypothesisCreateResponse
-from repository import research_gaps_repository
+from typing import List
+from dto.hypothesis_dto import HypothesisResponses, HypothesisResponse, HypothesisCreateRequest, HypothesisCreateResponse
 from repository.hypothesis_repository import HypothesisRepository
 from repository.hypothesis_reserach_repository import HypothesisResearchRepository
 from repository.research_gaps_repository import ResearchGapsRepository
-from model import Hypothesis
+from client.open_ai_client import OpenAiClient
+from model import Hypothesis, ResearchWithGaps
 import threading
 
 _user_id_counter = 1
@@ -15,11 +15,13 @@ class HypothesisService:
             self,
             hypothesis_repository: HypothesisRepository,
             hypothesis_research_repository: HypothesisResearchRepository,
-            research_gaps_repository: ResearchGapsRepository
+            research_gaps_repository: ResearchGapsRepository,
+            openai_client: OpenAiClient
     ):
         self.hypothesis_repository = hypothesis_repository
         self.hypothesis_research_repository = hypothesis_research_repository
         self.research_gaps_repository = research_gaps_repository
+        self.openai_client = openai_client
 
     def _next_user_id(self, user_id: int) -> int:
         if user_id is None:
@@ -39,14 +41,29 @@ class HypothesisService:
         )
         return self.hypothesis_repository.save(new_hypo)
 
+    def _update_hypothesis(self, research_with_gaps : List[ResearchWithGaps], hypo_id: int):
+        try:
+            raw_hypothesis = self.openai_client.create_hypothesis(research_with_gaps)
+            self.hypothesis_repository.update(raw_hypothesis, hypo_id)
+        except Exception as e:
+            print(f"Failed to update hypothesis {hypo_id}: {e}")
 
     def create_hypothesis(self, request: HypothesisCreateRequest) -> HypothesisCreateResponse:
         user_id = request.user_id
         gaps_id = request.gapIds
-        reserach_with_gaps = self.research_gaps_repository.get_research_with_gaps(gaps_id)
+        research_with_gaps = self.research_gaps_repository.get_research_with_gaps(gaps_id)
         user_id = self._next_user_id(user_id)
         new_hypo = self._save_pending_hypo(user_id)
-        return HypothesisCreateResponse(user_id = user_id)
+
+        #백그라운드로 실행
+        thread = threading.Thread(
+            target=self._update_hypothesis,
+            args=(research_with_gaps, new_hypo.id),
+            daemon=True
+        )
+        thread.start()
+
+        return HypothesisCreateResponse(userId = user_id)
 
     def get_my_hypothesis(self, user_id: int) -> HypothesisResponses:
         my_hypothesis : list[Hypothesis] = self.hypothesis_repository.get_by_userId(userid = user_id)
