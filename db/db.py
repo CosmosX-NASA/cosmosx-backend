@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from .db_base import db_base
 
 # 모델을 메타데이터에 등록하기 위해 import가 필요.
-from model import Research  # noqa: F401
+from model import Research, Figure  # noqa: F401
 
 
 # 2. 데이터베이스 URL 설정 using absolute path
@@ -28,6 +28,7 @@ try:
     db_base.metadata.create_all(engine)
     print("테이블 생성 성공")
     print(f"Database path: {DB_PATH}")
+    print("현재 metadata 등록된 테이블:", db_base.metadata.tables.keys())
 except Exception as e:
     print(f"테이블 생성 실패: {e}")
 

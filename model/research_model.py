@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from PIL.TiffImagePlugin import DATE_TIME
 from sqlalchemy import Column, String, Integer
 from db.db_base import db_base
 

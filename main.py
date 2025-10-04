@@ -1,8 +1,9 @@
 
+import db.db #db 초기화
 from fastapi import FastAPI
 from apis.ping_api import router as ping_router
 from exception.handlers import register_exception_handlers
-import db.db #db 초기화
+
 app = FastAPI(title="Practice API", version="1.0.0")
 
 app.include_router(ping_router) #핑 컨트롤러
