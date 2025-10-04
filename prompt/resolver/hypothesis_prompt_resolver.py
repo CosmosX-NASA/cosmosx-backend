@@ -12,8 +12,14 @@ class HypothesisPromptResolver:
             raise FileNotFoundError(f"Prompt file not found: {full_path}")
         return full_path.read_text(encoding="utf-8")
 
-    def resolve(self, research_with_gaps : List[ResearchWithGaps]) -> str:
+    def resolve_hypothesis_create_prompt(self, research_with_gaps : List[ResearchWithGaps]) -> str:
         prompt = self._load_prompt("prompt/create_hypothesis_prompt.txt")
         print(prompt) # 로깅
+        return prompt
+
+    def resolve_specify_question_prompt(self, search:str) -> str:
+        prompt_template = str(self._load_prompt("prompt/specify_question_prompt.txt"))
+        prompt = prompt_template.format(search=search)
+        print(prompt)
         return prompt
 

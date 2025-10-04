@@ -8,27 +8,27 @@ from dto.hypothesis_dto import HypothesisAiResponse
 from model import ResearchWithGaps, ResearchGap, Research
 from dotenv import load_dotenv
 
-@pytest.fixture
-def mock_prompt_resolver():
-    resolver = MagicMock(spec=HypothesisPromptResolver)
-    resolver.resolve.return_value = "PROMPT CONTENT"
-    return resolver
-
-
-@pytest.fixture
-def mock_openai_client(monkeypatch):
-    # OpenAI.ChatCompletion mock
-    mock_client = MagicMock(spec=OpenAI)
-    mock_response = MagicMock()
-    # OpenAI 반환 객체 구조 맞추기
-    mock_response.choices = [MagicMock()]
-    mock_response.choices[
-        0].message.content = '{"statement":"Test stmt","usage":"Test usage","evidence":"Test evidence"}'
-    mock_client.chat.completions.create.return_value = mock_response
-
-    from client import open_ai_client
-    monkeypatch.setattr(open_ai_client, "OpenAI", lambda *args, **kwargs: mock_client)
-    return mock_client
+# @pytest.fixture
+# def mock_prompt_resolver():
+#     resolver = MagicMock(spec=HypothesisPromptResolver)
+#     resolver.resolve.return_value = "PROMPT CONTENT"
+#     return resolver
+#
+#
+# @pytest.fixture
+# def mock_openai_client(monkeypatch):
+#     # OpenAI.ChatCompletion mock
+#     mock_client = MagicMock(spec=OpenAI)
+#     mock_response = MagicMock()
+#     # OpenAI 반환 객체 구조 맞추기
+#     mock_response.choices = [MagicMock()]
+#     mock_response.choices[
+#         0].message.content = '{"statement":"Test stmt","usage":"Test usage","evidence":"Test evidence"}'
+#     mock_client.chat.completions.create.return_value = mock_response
+#
+#     from client import open_ai_client
+#     monkeypatch.setattr(open_ai_client, "OpenAI", lambda *args, **kwargs: mock_client)
+#     return mock_client
 
 def test_create_hypothesis_success(mock_prompt_resolver, mock_openai_client):
     client = OpenAiClient(prompt_resolver=mock_prompt_resolver, api_key="DUMMY_KEY")
@@ -122,3 +122,17 @@ def test_create_hypothesis_real():
 
     assert isinstance(result, HypothesisAiResponse)
     print("AI Response:", result)
+
+
+@pytest.mark.skip(reason="실제 OpenAI 호출 테스트이므로 현재는 건너뜀")
+def test_specify_question_real_call():
+    resolver = HypothesisPromptResolver()
+
+    client = OpenAiClient(prompt_resolver=resolver)
+    keyword = "biology"
+    response = client.specify_question(keyword)
+
+    print("OpenAI response:", response)
+    # 최소한 응답이 문자열이고 비어있지 않은지 확인
+    assert isinstance(response, str)
+    assert len(response.strip()) > 0
