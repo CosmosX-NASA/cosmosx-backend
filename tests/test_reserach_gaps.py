@@ -1,8 +1,9 @@
-# tests/test_research_gaps.py
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from fastapi.testclient import TestClient
+from sqlalchemy.pool import StaticPool
+
 
 from db.db_base import db_base
 from db.db import get_db_session
@@ -11,22 +12,6 @@ from service.research_gaps_service import ResearchGapsService
 from repository.research_gaps_repository import ResearchGapsRepository
 from dto.research_gaps_dto import ResearchItemGapResponse
 from main import app
-
-
-@pytest.fixture(scope="function")
-def db_session():
-    engine = create_engine(
-        "sqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        echo=False
-    )
-    db_base.metadata.create_all(engine)
-    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    session = SessionLocal()
-    try:
-        yield session
-    finally:
-        session.close()
 
 
 @pytest.fixture(scope="function")
