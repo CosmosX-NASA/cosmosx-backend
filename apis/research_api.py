@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from repository.figure_repository import FigureRepository
 from repository.research_gaps_repository import ResearchGapsRepository
-from repository.reserach_repository import ResearchRagRepository
+from repository.research_repository import ResearchRagRepository
 from service.research_gaps_service import ResearchGapsService
 from service.research_service import ResearchService
 from dto.research_gaps_dto import ResearchGapsGroupedResponse
@@ -24,13 +24,13 @@ router = APIRouter(
 )
 def get_research(
         search: str = Query(..., description="유저가 입력한 검색어"),
-        page_size: int = Query(..., description="요청한 아이템 수"),
+        pageSize: int = Query(..., description="요청한 아이템 수"),
         db: Session = Depends(get_db_session),
 ):
     figure_repo = FigureRepository(db)
     research_repo = ResearchRagRepository(db)
     research_rag_service = ResearchService(figure_repo, research_repo)
-    return research_rag_service.find_research_by_rag(search, page_size)
+    return research_rag_service.find_research_by_rag(search, pageSize)
 
 @router.get(
     "/gaps",

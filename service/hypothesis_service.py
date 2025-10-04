@@ -1,7 +1,7 @@
 from typing import List
 from dto.hypothesis_dto import HypothesisResponses, HypothesisResponse, HypothesisCreateRequest, HypothesisCreateResponse
 from repository.hypothesis_repository import HypothesisRepository
-from repository.hypothesis_reserach_repository import HypothesisResearchRepository
+from repository.hypothesis_research_repository import HypothesisResearchRepository
 from repository.research_gaps_repository import ResearchGapsRepository
 from client.open_ai_client import OpenAiClient
 from model import Hypothesis, ResearchWithGaps

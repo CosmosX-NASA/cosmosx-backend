@@ -1,6 +1,6 @@
 from dto.research_dto import ResearchResponses
 from repository.figure_repository import FigureRepository
-from repository.reserach_repository import ResearchRagRepository
+from repository.research_repository import ResearchRagRepository
 
 
 class ResearchService:

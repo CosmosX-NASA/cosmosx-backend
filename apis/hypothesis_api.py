@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from db.db import get_db_session
 from dto.hypothesis_dto import HypothesisResponses, HypothesisCreateResponse, HypothesisCreateRequest
 from repository.hypothesis_repository import HypothesisRepository
-from repository.hypothesis_reserach_repository import HypothesisResearchRepository
+from repository.hypothesis_research_repository import HypothesisResearchRepository
 from repository.research_gaps_repository import ResearchGapsRepository
 from prompt.resolver.hypothesis_prompt_resolver import HypothesisPromptResolver
 from client.open_ai_client import OpenAiClient
