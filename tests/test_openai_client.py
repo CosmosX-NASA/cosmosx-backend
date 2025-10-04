@@ -1,12 +1,12 @@
-# tests/test_openai_client.py
 import pytest
 from unittest.mock import MagicMock
 
-from client.open_ai_client import OpenAiClient
 from openai import OpenAI
 from prompt.resolver.hypothesis_prompt_resolver import HypothesisPromptResolver
+from client.open_ai_client import OpenAiClient
 from dto.hypothesis_dto import HypothesisAiResponse
-
+from model import ResearchWithGaps, ResearchGap, Research
+from dotenv import load_dotenv
 
 @pytest.fixture
 def mock_prompt_resolver():
@@ -90,3 +90,35 @@ def test_create_hypothesis_success(mock_prompt_resolver, mock_openai_client):
 
     # OpenAI API가 호출되었는지 확인
     mock_openai_client.chat.completions.create.assert_called_once()
+
+
+# 실제 호출 테스트
+
+load_dotenv()
+
+@pytest.mark.skip(reason="실제 OpenAI 호출 테스트이므로 현재는 건너뜀")
+def test_create_hypothesis_real():
+    # 프롬프트 리졸버 (실제 파일 로딩)
+    resolver = HypothesisPromptResolver()
+
+    client = OpenAiClient(prompt_resolver=resolver)
+
+    # 더미 Research, ResearchGap 객체 생성
+    dummy_research = Research(
+        id=1, pmc_id="PMC12345", title="Test Research", journal="Test Journal",
+        doi="https://doi.org/10.1234/test", author="Author Name",
+        release_date="2025-10-04", brief_summary="Brief summary",
+        overall_summary="Overall summary", methods="Methods description", results="Results description"
+    )
+
+    dummy_gap1 = ResearchGap(
+        id=1, type="CONCEPTUAL", content="Dummy gap 1 content",
+        evidence="Evidence 1", research_title="Test Research", research_id=1
+    )
+
+    research_gaps_list = [ResearchWithGaps(research=dummy_research, gaps=[dummy_gap1])]
+
+    result: HypothesisAiResponse = client.create_hypothesis(research_gaps_list)
+
+    assert isinstance(result, HypothesisAiResponse)
+    print("AI Response:", result)

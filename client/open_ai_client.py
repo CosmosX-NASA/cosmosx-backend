@@ -22,7 +22,9 @@ class OpenAiClient:
             messages=[{"role": "user", "content": prompt}]
         )
         raw_response = response.choices[0].message.content
+
         print("응답 : " + raw_response)
+
         decoded = JsonDecoder.decode(raw_response, HypothesisAiResponse)
         if decoded is None:
             raise ValueError(f"OpenAI response could not be parsed as HypothesisAiResponse: {raw_response}")
