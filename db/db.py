@@ -2,10 +2,10 @@
 import os
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
-from db_base import db_base
+from .db_base import db_base
 
 # 모델을 메타데이터에 등록하기 위해 import가 필요.
-from model import UserTable, TodoTable  # noqa: F401
+from model import Research  # noqa: F401
 
 
 # 2. 데이터베이스 URL 설정 using absolute path
@@ -47,3 +47,5 @@ def get_db_session():
         yield db
     finally:
         db.close()
+
+#jdbc:sqlite:/Users/coli/Desktop/projects/fast-api-practice/Database.db
