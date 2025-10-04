@@ -51,7 +51,11 @@ jobs:
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/$DOCKERHUB_REPOSITORY:previous || true
 
       - name: Docker Image Build And Push
-        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/$DOCKERHUB_REPOSITORY:${{ github.sha }}-dev -f Dockerfile . --push
+        run: |
+            docker build \
+              --build-arg OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
+              -t ${{ secrets.DOCKERHUB_USERNAME }}/$DOCKERHUB_REPOSITORY:${{ github.sha }}-dev \
+              -f Dockerfile . --push
 
   deploy-prod:
     needs: test-and-build
