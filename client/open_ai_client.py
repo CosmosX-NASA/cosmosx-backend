@@ -18,7 +18,7 @@ class OpenAiClient:
     def create_hypothesis(self, research_with_gaps : List[ResearchWithGaps]) -> HypothesisAiResponse:
         prompt= self.prompt_resolver.resolve_hypothesis_create_prompt(research_with_gaps)
         response = self.client.chat.completions.create(
-            model="gpt-5-nano",
+            model="gpt-5-mini",
             messages=[{"role": "user", "content": prompt}]
         )
         raw_response = response.choices[0].message.content
