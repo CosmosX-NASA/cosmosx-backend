@@ -1,10 +1,13 @@
 
 from fastapi import FastAPI
 from apis.ping_api import router as ping_router
+from exception.handlers import register_exception_handlers
 
 app = FastAPI(title="Practice API", version="1.0.0")
 
-app.include_router(ping_router)
+app.include_router(ping_router) #핑 컨트롤러
+
+register_exception_handlers(app) #에러 핸들러 등록
 
 if __name__ == "__main__":
     import uvicorn
