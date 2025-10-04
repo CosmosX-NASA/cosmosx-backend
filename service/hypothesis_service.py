@@ -1,5 +1,6 @@
 from typing import List
-from dto.hypothesis_dto import HypothesisResponses, HypothesisResponse, HypothesisCreateRequest, HypothesisCreateResponse
+from dto.hypothesis_dto import HypothesisResponses, HypothesisResponse, HypothesisCreateRequest, \
+    HypothesisCreateResponse, HypothesisDoneCountResponse
 from repository.hypothesis_repository import HypothesisRepository
 from repository.hypothesis_research_repository import HypothesisResearchRepository
 from repository.research_gaps_repository import ResearchGapsRepository
@@ -74,3 +75,7 @@ class HypothesisService:
             hypo_researchs = self.hypothesis_research_repository.get_by_hypothesis_id(hypothesis_id=hypo.id)
             responses.append(HypothesisResponse.from_model(hypo, hypo_researchs))
         return HypothesisResponses(hypotheses=responses)
+
+    def get_done_hypothesis_count(self, user_id: int) -> HypothesisDoneCountResponse:
+        count = self.hypothesis_repository.count_by_user_id_and_status("DONE", user_id)
+        return HypothesisDoneCountResponse(count = count)

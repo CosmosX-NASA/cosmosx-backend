@@ -43,3 +43,6 @@ class HypothesisResponses(BaseModel):
 
 class HypothesisCreateResponse(BaseModel):
     userId: int
+
+class HypothesisDoneCountResponse(BaseModel):
+    count: int

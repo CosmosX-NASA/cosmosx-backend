@@ -36,4 +36,12 @@ class HypothesisRepository:
         self.db.refresh(hypo)  # 최신 상태 반영
         return hypo
 
-
+    def count_by_user_id_and_status(self, status: str, user_id: int) -> int:
+        return (
+            self.db.query(Hypothesis)
+            .filter(
+                Hypothesis.status == status,
+                Hypothesis.user_id == user_id
+            )
+            .count()
+        )

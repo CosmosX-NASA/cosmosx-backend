@@ -3,7 +3,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from db.db_base import db_base
-from db.db import get_db_session
 
 @pytest.fixture(scope="function")
 def db_session():

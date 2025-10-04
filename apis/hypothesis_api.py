@@ -2,7 +2,8 @@ from fastapi import APIRouter, status, Query, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
 
 from db.db import get_db_session
-from dto.hypothesis_dto import HypothesisResponses, HypothesisCreateResponse, HypothesisCreateRequest
+from dto.hypothesis_dto import HypothesisResponses, HypothesisCreateResponse, HypothesisCreateRequest, \
+    HypothesisDoneCountResponse
 from repository.hypothesis_repository import HypothesisRepository
 from repository.hypothesis_research_repository import HypothesisResearchRepository
 from repository.research_gaps_repository import ResearchGapsRepository
@@ -49,3 +50,26 @@ def get_my_hypothesis(
     )
     return hypothesis_service.get_my_hypothesis(userId)
 
+
+@router.get(
+    "/done",
+    summary="생성 완료된 가설 목록 반환",
+    response_model=HypothesisDoneCountResponse,
+)
+def get_done_hypothesis_count(
+        userId: int = Query(..., description="유저 id"),
+        db: Session = Depends(get_db_session),
+):
+    hypothesis_repository = HypothesisRepository(db)
+    hypothesis_research_repository = HypothesisResearchRepository(db)
+    research_gaps_repository = ResearchGapsRepository(db)
+    prompt_resolver = HypothesisPromptResolver()
+    openai_client = OpenAiClient(prompt_resolver)
+
+    hypothesis_service = HypothesisService(
+        hypothesis_repository,
+        hypothesis_research_repository,
+        research_gaps_repository,
+        openai_client
+    )
+    return hypothesis_service.get_done_hypothesis_count(userId)
