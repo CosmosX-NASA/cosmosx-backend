@@ -16,7 +16,7 @@ class OpenAiClient:
         self.client = OpenAI(api_key=self.api_key)
 
     def create_hypothesis(self, research_with_gaps : List[ResearchWithGaps]) -> HypothesisAiResponse:
-        prompt= self.prompt_resolver.resolve(research_with_gaps)
+        prompt= self.prompt_resolver.resolve_hypothesis_create_prompt(research_with_gaps)
         response = self.client.chat.completions.create(
             model="gpt-5-nano",
             messages=[{"role": "user", "content": prompt}]
@@ -29,3 +29,14 @@ class OpenAiClient:
         if decoded is None:
             raise ValueError(f"OpenAI response could not be parsed as HypothesisAiResponse: {raw_response}")
         return decoded
+
+    def specify_question(self, search:str) -> str:
+        user_prompt = self.prompt_resolver.resolve_specify_question_prompt(search)
+        response = self.client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": user_prompt}]
+        )
+        raw_response = response.choices[0].message.content
+        print("응답 : " + raw_response)
+        return raw_response
+
