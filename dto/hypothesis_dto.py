@@ -8,6 +8,13 @@ class HypothesisCreateRequest(BaseModel):
     gapIds: List[int]
 
 #Response
+
+class HypothesisAiResponse(BaseModel):
+    statement: str
+    usage: str
+    evidence: str
+
+
 class HypothesisResponse(BaseModel):
     id: int
     status: str
