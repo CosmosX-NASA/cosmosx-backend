@@ -1,11 +1,6 @@
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from fastapi.testclient import TestClient
-from sqlalchemy.pool import StaticPool
 
-
-from db.db_base import db_base
 from db.db import get_db_session
 from model import ResearchGap
 from service.research_gaps_service import ResearchGapsService
