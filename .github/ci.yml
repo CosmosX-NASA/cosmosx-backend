@@ -1,0 +1,36 @@
+name: CI Pipeline
+
+on:
+  pull_request:
+    branches: ["develop"]
+
+env:
+  DOCKERHUB_REPOSITORY: nasa-hackerton
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ✅ 1) Checkout 코드
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ✅ 2) Python 설정
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # ✅ 3) pip 최신화 및 의존성 설치
+      - name: Install dependencies
+        run: |
+          pip install uv
+          uv sync --dev
+          python -m pip install pytest pytest-cov httpx
+
+      # ✅ 4)  테스트 실행 -> 1개만 실패해도 무조건 중단
+      - name: Run tests
+        run: |
+          echo "테스트 스크립트 실행 (pytest)"
+          uv run pytest --maxfail=1 --disable-warnings -q --rootdir=.
