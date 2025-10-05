@@ -2,35 +2,58 @@
 from __future__ import annotations
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from adapters import AutoAdapterModel
-from sqlalchemy.orm import Session
 import torch
-import numpy as np
 import pandas as pd
+from sqlalchemy.orm import Session
+import numpy as np
 import os
 import json
-
 import logging
+import warnings
 
-# --- Patch logging to avoid KeyError: 'code' in formatters ---
 
+# ========== 로깅 에러 완전 해결 ==========
 
-class _EnsureCodeFilter(logging.Filter):
+class SafeFilter(logging.Filter):
+    """누락된 필드를 기본값으로 채워주는 필터"""
+
     def filter(self, record):
-        if not hasattr(record, "code"):
-            record.code = "-"
+        if not hasattr(record, 'code'):
+            record.code = '-'
+        if not hasattr(record, 'funcName'):
+            record.funcName = '-'
+        if not hasattr(record, 'lineno'):
+            record.lineno = 0
         return True
 
 
-# Attach the filter to all existing handlers
-_root_logger = logging.getLogger()
-for _h in list(_root_logger.handlers):
-    _h.addFilter(_EnsureCodeFilter())
+# 루트 로거와 모든 핸들러에 필터 적용
+root_logger = logging.getLogger()
+for handler in root_logger.handlers:
+    handler.addFilter(SafeFilter())
 
-# Silence overly chatty logs from the adapters library which triggered the original message
-logging.getLogger("adapters").setLevel(logging.WARNING)
+# 추가: 새로 생성되는 핸들러에도 필터 자동 적용
+_original_add_handler = logging.Logger.addHandler
 
-from sqlalchemy import Column, String, Integer
-from db.db_base import db_base
+
+def _patched_add_handler(self, handler):
+    handler.addFilter(SafeFilter())
+    _original_add_handler(self, handler)
+
+
+logging.Logger.addHandler = _patched_add_handler
+
+# adapters 라이브러리 로그 레벨 조정
+logging.getLogger("adapters").setLevel(logging.ERROR)
+logging.getLogger("transformers").setLevel(logging.WARNING)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+
+# 경고 메시지 억제
+warnings.filterwarnings('ignore', category=FutureWarning)
+warnings.filterwarnings('ignore', category=UserWarning)
+
+# ==========================================
+
 from typing import List
 from model import Research
 
@@ -43,53 +66,47 @@ class ResearchRagRepository:
       - 논문의 개수는 529개로 FAISS를 사용하는 것이 오버해드가 더 크기에 미사용.
       - (옵션) 초기 벡터 검색 상위 N(기본 50)개를 Cross-Encoder로 재랭킹.
     - 임베딩과 재랭킹에 사용하는 문서 텍스트는 CSV의 제목과 초록만을 활용.
-
-    Args:
-        csv_path (str): 논문 메타데이터 CSV 경로. 
-        store_dir (str): 인덱스(임베딩)를 저장할 경로. 기본 ".rag_store"
-        device (str): 임베딩 및 재랭킹 모델이 동작할 디바이스(cpu/gpu).
-        cross_encoder_model (str): HF 허브 Cross-Encoder 모델 이름/경로. 기본 "cross-encoder/ms-marco-MiniLM-L-6-v2"
     """
 
     def __init__(
-        self,
-        db: Session,
-        csv_path: str = "db/rag_store/info.csv",
-        store_dir: str = "db/rag_store",
-        device: str = "cpu",
-        cross_encoder_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2",
+            self,
+            db: Session,
+            csv_path: str = "db/rag_store/info.csv",
+            store_dir: str = "db/rag_store",
+            device: str = "cpu",
+            cross_encoder_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2",
     ):
         self.db = db
         self.csv_path = csv_path
         self.store_dir = store_dir
         self.device = device
         self.cross_encoder_model = cross_encoder_model
-        self.cross_encoder = None  # Lazy-load for reranking
+        self.cross_encoder = None
         self.ce_tok = None
         self.ce_model = None
 
         os.makedirs(self.store_dir, exist_ok=True)
         if not os.path.exists(csv_path):
-            raise Exception('Rag info.csv not found')
+            raise FileNotFoundError(f'RAG info.csv not found at {csv_path}')
 
-        # 모델/토크나이저 로드 (Hugging Face Hub)
+        print("[RAG] Loading SPECTER2 models...")
         # SPECTER2 토크나이저
         self.tok = AutoTokenizer.from_pretrained("allenai/specter2_base")
         # 어댑터 지원 베이스 모델
-        self.model = AutoAdapterModel.from_pretrained(
-            "allenai/specter_plus_plus")
+        self.model = AutoAdapterModel.from_pretrained("allenai/specter_plus_plus")
+
         # 문서 임베딩용(Proximity)과 질의 임베딩용(Query) 어댑터를 각각 로드
         self.model.load_adapter("allenai/specter2", load_as="proximity")
-        self.model.load_adapter(
-            "allenai/specter2_adhoc_query", load_as="query")
+        self.model.load_adapter("allenai/specter2_adhoc_query", load_as="query")
         self.model.eval()
+        print("[RAG] Models loaded successfully.")
 
         # CSV 로드
         self.papers_df = pd.read_csv(self.csv_path)
         self.papers = self.papers_df.to_dict("records")
 
         # 인덱스 로드 또는 생성
-        self.index = None  # L2-normalized doc embeddings
+        self.index = None
         self._build_or_load_index()
 
     # ---------- 내부 유틸 ----------
@@ -106,7 +123,7 @@ class ResearchRagRepository:
         return True
 
     def _translate2EN(self, query: str) -> str:
-        return query  # 영어가 아니라면 영어로 변역해서 입력하는 것이 적합.
+        return query
 
     def _cfg_path(self) -> str:
         return os.path.join(self.store_dir, "cfg.json")
@@ -149,19 +166,18 @@ class ResearchRagRepository:
                     cfg = json.load(f)
                 idx = np.load(idx_path).astype("float32")
 
-                expected = {k: sig[k]
-                            for k in ("path", "size", "rows")} if sig else None
+                expected = {k: sig[k] for k in ("path", "size", "rows")} if sig else None
                 if (
-                    expected is not None
-                    and cfg.get("csv_signature", {}) == expected
-                    and cfg.get("content_source") == "abstract"
-                    and idx.shape[0] == len(self.papers)
+                        expected is not None
+                        and cfg.get("csv_signature", {}) == expected
+                        and cfg.get("content_source") == "abstract"
+                        and idx.shape[0] == len(self.papers)
                 ):
                     self.index = idx
                     print("[RAG] Loaded existing index from store.")
                     return
-            except Exception:
-                pass  # 손상되었거나 호환 불가인 경우 재생성
+            except Exception as e:
+                print(f"[RAG] Failed to load index: {e}, rebuilding...")
 
         # 인덱스 재생성
         print("[RAG] Building index from CSV...")
@@ -171,8 +187,7 @@ class ResearchRagRepository:
         # 저장
         np.save(idx_path, self.index)
         if sig is None:
-            raise FileNotFoundError(
-                f"CSV metadata not found at {self.csv_path}")
+            raise FileNotFoundError(f"CSV metadata not found at {self.csv_path}")
         cfg = {
             "csv_signature": {k: sig[k] for k in ("path", "size", "rows")},
             "dim": int(self.index.shape[1]),
@@ -185,7 +200,12 @@ class ResearchRagRepository:
     # ---------- 임베딩 ----------
     @torch.no_grad()
     def encode_papers(self, papers, batch_size: int = 32, max_length: int = 512):
-        self.model.set_active_adapters("proximity")
+        # 어댑터 활성화를 try-except로 감싸서 로깅 에러 무시
+        try:
+            self.model.set_active_adapters("proximity")
+        except Exception:
+            pass  # 로깅 에러 무시
+
         self.model.to(self.device)
         out = []
         for i in range(0, len(papers), batch_size):
@@ -206,14 +226,18 @@ class ResearchRagRepository:
                 return_tensors="pt",
                 return_token_type_ids=False,
             ).to(self.device)
-            last_hidden = self.model(**enc).last_hidden_state  # [B, L, H]
-            cls = last_hidden[:, 0, :]  # [B, H] -> 768-d
+            last_hidden = self.model(**enc).last_hidden_state
+            cls = last_hidden[:, 0, :]
             out.append(cls.cpu().numpy().astype("float32"))
         return np.vstack(out) if out else np.empty((0, 768), dtype="float32")
 
     @torch.no_grad()
     def encode_queries(self, queries, max_length: int = 64):
-        self.model.set_active_adapters("query")
+        try:
+            self.model.set_active_adapters("query")
+        except Exception:
+            pass
+
         self.model.to(self.device)
         enc = self.tok(
             queries,
@@ -223,16 +247,15 @@ class ResearchRagRepository:
             return_tensors="pt",
             return_token_type_ids=False,
         ).to(self.device)
-        q = self.model(
-            **enc).last_hidden_state[:, 0, :].cpu().numpy().astype("float32")
+        q = self.model(**enc).last_hidden_state[:, 0, :].cpu().numpy().astype("float32")
         return self._l2_normalize(q, axis=1)
 
     def _load_cross_encoder(self):
         if self.ce_model is None:
-            self.ce_tok = AutoTokenizer.from_pretrained(
-                self.cross_encoder_model)
+            self.ce_tok = AutoTokenizer.from_pretrained(self.cross_encoder_model)
             self.ce_model = AutoModelForSequenceClassification.from_pretrained(
-                self.cross_encoder_model)
+                self.cross_encoder_model
+            )
             self.ce_model.to(self.device)
             self.ce_model.eval()
 
@@ -252,7 +275,7 @@ class ResearchRagRepository:
                 return_tensors="pt",
             ).to(self.device)
             out = self.ce_model(**enc)
-            logits = out.logits  # [B, 1] or [B, 2]
+            logits = out.logits
             if logits.shape[-1] == 1:
                 s = logits.squeeze(-1).detach().cpu().numpy()
             else:
@@ -261,9 +284,7 @@ class ResearchRagRepository:
         return np.array(scores, dtype="float32")
 
     def _get_by_pmc_ids(self, pmc_ids: List[str]) -> list[Research]:
-        return (self.db.query(Research)
-                .filter(Research.pmc_id.in_(pmc_ids))
-                .all())
+        return self.db.query(Research).filter(Research.pmc_id.in_(pmc_ids)).all()
 
     def _fetch_researches_ordered(self, pmc_ids: list[str]) -> list[Research]:
         if not pmc_ids:
@@ -273,7 +294,6 @@ class ResearchRagRepository:
         return [lookup[pmc_id] for pmc_id in pmc_ids if pmc_id in lookup]
 
     # ---------- 검색 ----------
-
     def find_by_user_search(self, search: str, pageSize: int = 5, ce_rerank_k: int = 50):
         if self.index is None:
             self._build_or_load_index()
@@ -281,20 +301,17 @@ class ResearchRagRepository:
         if not self._isEnglish(search):
             search = self._translate2EN(search)
 
-        # 1) Dense retrieval with SPECTER2 search encoder
-        q = self.encode_queries([search])  # [1, 768]
-        scores = np.dot(self.index, q[0])  # cosine similarity (정규화된 내적)
+        q = self.encode_queries([search])
+        scores = np.dot(self.index, q[0])
 
-        # 가져올 후보 개수 (재랭킹 후보는 기본 50, 최소 k)
         n_candidates = max(
-            pageSize, ce_rerank_k if ce_rerank_k and ce_rerank_k > 0 else pageSize)
+            pageSize, ce_rerank_k if ce_rerank_k and ce_rerank_k > 0 else pageSize
+        )
         n_candidates = min(n_candidates, scores.shape[0])
 
-        # Top-n 후보 고르기 (partial sort)
         idx_part = np.argpartition(scores, -n_candidates)[-n_candidates:]
         idx_sorted_dense = idx_part[np.argsort(scores[idx_part])[::-1]]
 
-        # 2) (옵션) Cross-Encoder 재랭킹
         if ce_rerank_k and ce_rerank_k > 0:
             self._load_cross_encoder()
             pairs = [(search, self._paper_to_text(self.papers[int(j)]))
@@ -311,7 +328,6 @@ class ResearchRagRepository:
                     pmc_ids.append(pmc_id)
             return self._fetch_researches_ordered(pmc_ids)
 
-        # 3) 재랭킹 비활성화 시: dense 결과 상위 k개 반환
         final_idx = idx_sorted_dense[:pageSize]
         pmc_ids = []
         for j in final_idx:
@@ -320,49 +336,3 @@ class ResearchRagRepository:
             if pmc_id:
                 pmc_ids.append(pmc_id)
         return self._fetch_researches_ordered(pmc_ids)
-
-
-if __name__ == "__main__":
-    import time
-    from db.db import get_db_session
-
-    # 기본 경로들(모두 변경 가능)
-    rag = ResearchRagRepository(
-        db=get_db_session(),
-        csv_path="db/rag_store/info.csv",
-        store_dir="db/rag_store",
-    )
-
-    # 예시 질의
-    q = "The impact of solar wind on humans in space"
-    hits = rag.find_by_user_search(q, pageSize=5, ce_rerank_k=50)
-    for r in hits:
-        if "ce_score" in r:
-            print(
-                f"[dense={r.get('score'):.4f} | ce={r.get('ce_score'):.4f}] {r.get('PMCID')} {r.get('title')}")
-        else:
-            print(
-                f"[dense={r.get('score'):.4f}] {r.get('PMCID')} {r.get('title')}")
-
-    # 이미 로드된 상태에서는 얼마나 빠른가보자.
-    time.sleep(1)
-    print("\nQuestion: Microgravity will dilate human blood vessels and promote growth.\n\n")
-
-    q = "Microgravity will dilate human blood vessels and promote growth."
-    hits = rag.find_by_user_search(q, pageSize=5, ce_rerank_k=50)
-    print([r.get('PMCID') for r in hits])
-    for r in hits:
-        if "ce_score" in r:
-            print(
-                f"[dense={r.get('score'):.4f} | ce={r.get('ce_score'):.4f}] {r.get('PMCID')} {r.get('title')}")
-        else:
-            print(
-                f"[dense={r.get('score'):.4f}] {r.get('PMCID')} {r.get('title')}")
-
-"""
-[dense=0.7909 | ce=1.7362] PMC11988870 Microgravity and Cellular Biology: Insights into Cellular Responses and Implications for Human Health
-[dense=0.7515 | ce=0.4570] PMC7787258 Prolonged Exposure to Microgravity Reduces Cardiac Contractility and Initiates Remodeling in Drosophila
-[dense=0.7518 | ce=-0.3368] PMC4110898 Fifteen Days Microgravity Causes Growth in Calvaria of Mice
-[dense=0.7859 | ce=-2.1094] PMC7339929 Simulated Microgravity Induces Regionally Distinct Neurovascular and Structural Remodeling of Skeletal Muscle and Cutaneous Arteries in the Rat
-[dense=0.7582 | ce=-2.3219] PMC6275019 Synergistic Effects of Weightlessness  Isoproterenol  and Radiation on DNA Damage Response and Cytokine Production in Immune Cells
-"""

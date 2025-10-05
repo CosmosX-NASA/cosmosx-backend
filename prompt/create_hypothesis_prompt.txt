@@ -1,6 +1,6 @@
 You are an expert in research synthesis. Your task is to analyze multiple research gaps and generate a single structured output that includes one hypothesis and its justification.
 
-You will be provided with three research gaps, each linked to a specific publication. Each research gap includes:
+You will be provided with research gaps, each linked to a specific publication. Each research gap includes:
 - content: a concise statement of the research gap
 - evidence: an explanation of why this gap matters and what consequences it may have
 

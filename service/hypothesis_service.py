@@ -51,25 +51,30 @@ class HypothesisService:
         for research in related_research:
             self.hypothesis_research_repository.save(hypo_id, research.doi)
 
-    def _update_hypothesis_and_save_research(self, research_with_gaps : List[ResearchWithGaps], hypo_id: int):
+    def _update_hypothesis_and_save_research(self, gapsId : List[int], hypo_id: int):
         try:
+            research_with_gaps = self.research_gaps_repository.get_research_with_gaps(gapsId)
             raw_hypothesis = self.openai_client.create_hypothesis(research_with_gaps)
-            self.hypothesis_repository.update(raw_hypothesis, hypo_id)
+            self.hypothesis_repository.update(ai_response=raw_hypothesis, hypo_id=hypo_id)
             self._save_hypothesis_research(raw_hypothesis.statement, hypo_id)
+            print("success create hypothesis and save hypothesis research")
         except Exception as e:
             print(f"Failed to update hypothesis {hypo_id}: {e}")
 
-    def create_hypothesis(self, request: HypothesisCreateRequest) -> HypothesisCreateResponse:
-        user_id = request.user_id
+    def create_hypothesis(
+            self, request: HypothesisCreateRequest
+    ) -> HypothesisCreateResponse:
+        user_id = request.userId
         gaps_id = request.gapIds
-        research_with_gaps = self.research_gaps_repository.get_research_with_gaps(gaps_id)
         user_id = self._next_user_id(user_id)
         new_hypo = self._save_pending_hypo(user_id)
+
+        self.hypothesis_repository.db.commit()
 
         #백그라운드로 실행
         thread = threading.Thread(
             target=self._update_hypothesis_and_save_research,
-            args=(research_with_gaps, new_hypo.id),
+            args=(gaps_id, new_hypo.id),
             daemon=True
         )
         thread.start()

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, status, Query
 from dto.search_dto import SpecifySearchResponse
+from prompt.resolver.hypothesis_prompt_resolver import HypothesisPromptResolver
 from service.search_service import SearchService
 from client.open_ai_client import OpenAiClient
 
@@ -15,6 +16,7 @@ router = APIRouter(
     response_model= SpecifySearchResponse
 )
 def search_specify(search: str = Query(..., description="유저가 입력한 검색어")) :
-    openai_client = OpenAiClient()
+    prompt_resolver = HypothesisPromptResolver()
+    openai_client = OpenAiClient(prompt_resolver=prompt_resolver)
     search_service = SearchService(openai_client)
     return search_service.specify(search=search)

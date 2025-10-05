@@ -1,36 +1,39 @@
-# 1. Base Image
-#FROM --platform=linux/arm64 python:3.11-slim
+# 1. Base Image (슬림 + 빌드툴 최소)
 FROM python:3.11-slim
 
-# 2. 빌드 아규먼트 정의
-ARG OPENAI_API_KEY
+# 2. 환경 변수 설정
+ENV PYTHONUNBUFFERED=1
 
-# 3. 환경 변수로 설정
-ENV OPENAI_API_KEY=${OPENAI_API_KEY}
-
-# 4. 작업 디렉토리 설정
+# 3. 작업 디렉토리
 WORKDIR /app
 
-# 5. 시스템 패키지 업데이트 및 필수 라이브러리 설치
+# 4. 시스템 패키지 설치 (torch, transformers, faiss 설치 대비)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
-# 6. Poetry or pip 기반 설치 (pyproject.toml & requirements로 처리)
-COPY pyproject.toml .
-# (만약 poetry.lock이 있다면 같이 복사)
-# COPY poetry.lock .
-
-# 7. pip로 의존성 설치 (uv 등 포함)
+# 5. pip 업그레이드
 RUN pip install --upgrade pip
-# 만약 Poetry를 사용하지 않는다면 requirements 추출
-# pip가 pyproject를 자동 인식하도록 하거나, 아래처럼 수동 설치도 가능
-RUN pip install fastapi uvicorn \
-    bcrypt ipykernel joblib pillow pydantic pyjwt python-decouple \
-    python-dotenv python-multipart scikit-learn sqlalchemy
 
-# 8. 애플리케이션 코드 복사
+# 6. 필요한 패키지만 설치
+RUN pip install --no-cache-dir \
+    fastapi \
+    uvicorn \
+    pydantic \
+    python-dotenv \
+    sqlalchemy \
+    python-multipart \
+    openai \
+    numpy \
+    pandas \
+    faiss-cpu \
+    torch \
+    transformers \
+    adapters
+
+# 7. 소스 코드 복사
 COPY . .
 
-# 7. 컨테이너 실행 시 uvicorn 실행
+# 8. 컨테이너 실행 명령
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
