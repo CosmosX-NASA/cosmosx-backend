@@ -2,7 +2,7 @@ name: CD Pipeline
 
 on:
   push:
-    branches: ["main", "feat/#41-hypothesis-research"]
+    branches: ["main"]
 
 env:
   DOCKERHUB_REPOSITORY: nasa-hackerton
@@ -34,25 +34,6 @@ jobs:
         run: |
           echo "테스트 스크립트 실행 (pytest)"
           uv run pytest --maxfail=1 --disable-warnings -q --rootdir=.
-
-      - name: Free Disk Space
-        run: |
-          echo "=== Before cleanup ==="
-          df -h
-
-          # 도커 이미지/컨테이너 정리
-          docker system prune -af || true
-          docker volume prune -f || true
-
-          # APT 캐시 제거
-          sudo apt-get clean
-          sudo rm -rf /var/lib/apt/lists/*
-
-          # npm 캐시 제거 (사용 중이면)
-          npm cache clean --force || true
-
-          echo "=== After cleanup ==="
-          df -h
 
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
