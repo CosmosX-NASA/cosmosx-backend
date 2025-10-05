@@ -2,6 +2,19 @@ from typing import List, Optional
 from pydantic import BaseModel
 from model import Hypothesis, HypothesisResearch
 
+#Request
+class HypothesisCreateRequest(BaseModel):
+    userId: Optional[int] = None
+    gapIds: List[int]
+
+#Response
+
+class HypothesisAiResponse(BaseModel):
+    statement: str
+    usage: str
+    evidence: str
+
+
 class HypothesisResponse(BaseModel):
     id: int
     status: str
@@ -27,3 +40,9 @@ class HypothesisResponse(BaseModel):
 
 class HypothesisResponses(BaseModel):
     hypotheses: List[HypothesisResponse]
+
+class HypothesisCreateResponse(BaseModel):
+    userId: int
+
+class HypothesisDoneCountResponse(BaseModel):
+    count: int

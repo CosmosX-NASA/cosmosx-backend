@@ -1,16 +1,28 @@
 
 import db.db #db 초기화
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from apis.ping_api import router as ping_router
-from apis.research_gaps_api import router as research_gaps_router
+from apis.research_api import router as research_router
 from apis.hypothesis_api import router as hypothesis_router
+from apis.search_api import router as search_router
 from exception.handlers import register_exception_handlers
 
 app = FastAPI(title="Practice API", version="1.0.0")
 
+#CORS 설정
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],         # 모든 도메인 허용
+    allow_credentials=True,
+    allow_methods=["*"],         # 모든 HTTP 메서드 허용 (GET, POST, PUT 등)
+    allow_headers=["*"],         # 모든 헤더 허용
+)
+
 app.include_router(ping_router) #핑 컨트롤러
-app.include_router(research_gaps_router)  #연구 간극 api
+app.include_router(research_router)  #연구 간극 api
 app.include_router(hypothesis_router)  # 가설 api
+app.include_router(search_router) #검색 api
 
 register_exception_handlers(app) #에러 핸들러 등록
 

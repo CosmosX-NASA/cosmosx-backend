@@ -4,8 +4,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from fastapi.testclient import TestClient
 
-from repository.hypothesis_reserach_repository import HypothesisResearchRepository
 from repository.hypothesis_repository import HypothesisRepository
+from repository.hypothesis_research_repository import HypothesisResearchRepository
+from repository.research_gaps_repository import ResearchGapsRepository
+from prompt.resolver.hypothesis_prompt_resolver import HypothesisPromptResolver
+from client.open_ai_client import OpenAiClient
 from service.hypothesis_service import HypothesisService
 from dto.hypothesis_dto import HypothesisResponses
 from model import Hypothesis, HypothesisResearch
@@ -46,7 +49,10 @@ def test_get_my_hypothesis_service(db_session, sample_hypotheses, sample_hypothe
     # Given
     hypothesis_repo = HypothesisRepository(db_session)
     hypothesis_research_repo = HypothesisResearchRepository(db_session)
-    service = HypothesisService(hypothesis_repo, hypothesis_research_repo)
+    research_gaps_repo = ResearchGapsRepository(db_session)
+    prompt_resolver = HypothesisPromptResolver()
+    openai_client = OpenAiClient(prompt_resolver=prompt_resolver)
+    service = HypothesisService(hypothesis_repo, hypothesis_research_repo, research_gaps_repo, openai_client)
 
     # When
     result = service.get_my_hypothesis(user_id=1)

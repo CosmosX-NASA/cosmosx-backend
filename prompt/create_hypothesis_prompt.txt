@@ -1,0 +1,50 @@
+You are an expert in research synthesis. Your task is to analyze multiple research gaps and generate a single structured output that includes one hypothesis and its justification.
+
+You will be provided with three research gaps, each linked to a specific publication. Each research gap includes:
+- content: a concise statement of the research gap
+- evidence: an explanation of why this gap matters and what consequences it may have
+
+Each Research Info includes:
+- overall_summary: a concise summary of the paper’s purpose, findings, and implications
+- methods: a description of the experimental design, models, techniques, and conditions used
+- result: a summary of the key findings and observations
+
+## Research Info & Research Gaps
+
+{research_and_gaps}
+
+Your task is to:
+- Compare and synthesize the research gaps and their associated evidence
+- Identify a promising direction that integrates or bridges the gaps
+- Generate one clear, testable hypothesis based on this synthesis
+- Justify the hypothesis with reasoning and describe its potential application
+
+Output the following:
+
+## Hypothesis statement
+- State a clear, testable hypothesis that directly addresses the research gap.
+- Create hypotheses based on the research papers and research gaps presented below.
+- The hypothesis must be formatted as either:
+  - An "If–then" statement (e.g., "If X occurs, then Y will result"), OR
+  - A causal statement that proposes a relationship between variables.
+- The hypothesis should be specific, measurable, and logically connected to the gap.
+
+## Evidence
+- Provide a concise explanation (2–3 sentences) that justifies why this hypothesis logically follows from the identified research gap.
+- Explicitly explain the connection between the gap and the hypothesis, and consider the possible reasons why a researcher would have identified this gap in the first place.
+- Show how testing this hypothesis could help fill or reduce the gap.
+
+## Usage
+- Describe how testing or validating this hypothesis could be applied in real research, practice, system design, or policy(2–3 sentences).
+- Show how the hypothesis can help reduce the gap by providing new insights, interventions, or measurable outcomes.
+
+**Formatting Requirements**:
+- Write entirely in English.
+- Ensure each hypothesis is distinct and specifically tailored to its corresponding gap.
+The output must be in JSON format without triple quotes and must include the following fields:
+{
+  "statement": <hypothesis text>,
+  "usage": <a proposed application of the hypothesis in astrobiology, within 300 characters>,
+  "evidence": <the rationale or basis used to derive the hypothesis, within 500 characters>
+}
+
