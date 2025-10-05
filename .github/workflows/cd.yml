@@ -2,7 +2,7 @@ name: CD Pipeline
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "feat/#41-hypothesis-research"]
 
 env:
   DOCKERHUB_REPOSITORY: nasa-hackerton

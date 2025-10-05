@@ -9,6 +9,7 @@ from repository.hypothesis_research_repository import HypothesisResearchReposito
 from repository.research_gaps_repository import ResearchGapsRepository
 from prompt.resolver.hypothesis_prompt_resolver import HypothesisPromptResolver
 from client.open_ai_client import OpenAiClient
+from repository.research_repository import ResearchRagRepository
 from service.hypothesis_service import HypothesisService
 
 router = APIRouter(
@@ -39,6 +40,7 @@ def get_my_hypothesis(
     hypothesis_repository = HypothesisRepository(db)
     hypothesis_research_repository = HypothesisResearchRepository(db)
     research_gaps_repository = ResearchGapsRepository(db)
+    research_repository = ResearchRagRepository(db)
     prompt_resolver = HypothesisPromptResolver()
     openai_client = OpenAiClient(prompt_resolver)
 
@@ -46,7 +48,8 @@ def get_my_hypothesis(
         hypothesis_repository,
         hypothesis_research_repository,
         research_gaps_repository,
-        openai_client
+        openai_client,
+        research_repository,
     )
     return hypothesis_service.get_my_hypothesis(userId)
 
@@ -65,11 +68,13 @@ def get_done_hypothesis_count(
     research_gaps_repository = ResearchGapsRepository(db)
     prompt_resolver = HypothesisPromptResolver()
     openai_client = OpenAiClient(prompt_resolver)
+    research_repository = ResearchRagRepository(db)
 
     hypothesis_service = HypothesisService(
         hypothesis_repository,
         hypothesis_research_repository,
         research_gaps_repository,
-        openai_client
+        openai_client,
+        research_repository
     )
     return hypothesis_service.get_done_hypothesis_count(userId)

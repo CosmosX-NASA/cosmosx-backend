@@ -8,6 +8,8 @@ from client.open_ai_client import OpenAiClient
 from model import Hypothesis, ResearchWithGaps
 import threading
 
+from repository.research_repository import ResearchRagRepository
+
 _user_id_counter = 1
 _user_id_lock = threading.Lock()
 
@@ -17,9 +19,11 @@ class HypothesisService:
             hypothesis_repository: HypothesisRepository,
             hypothesis_research_repository: HypothesisResearchRepository,
             research_gaps_repository: ResearchGapsRepository,
-            openai_client: OpenAiClient
+            openai_client: OpenAiClient,
+            research_repository: ResearchRagRepository
     ):
         self.hypothesis_repository = hypothesis_repository
+        self.research_repository = research_repository
         self.hypothesis_research_repository = hypothesis_research_repository
         self.research_gaps_repository = research_gaps_repository
         self.openai_client = openai_client
@@ -42,10 +46,16 @@ class HypothesisService:
         )
         return self.hypothesis_repository.save(new_hypo)
 
-    def _update_hypothesis(self, research_with_gaps : List[ResearchWithGaps], hypo_id: int):
+    def _save_hypothesis_research(self, hypothesis:str, hypo_id: int):
+        related_research = self.research_repository.find_by_user_search(hypothesis, 3)
+        for research in related_research:
+            self.hypothesis_research_repository.save(hypo_id, research.doi)
+
+    def _update_hypothesis_and_save_research(self, research_with_gaps : List[ResearchWithGaps], hypo_id: int):
         try:
             raw_hypothesis = self.openai_client.create_hypothesis(research_with_gaps)
             self.hypothesis_repository.update(raw_hypothesis, hypo_id)
+            self._save_hypothesis_research(raw_hypothesis.statement, hypo_id)
         except Exception as e:
             print(f"Failed to update hypothesis {hypo_id}: {e}")
 
@@ -58,7 +68,7 @@ class HypothesisService:
 
         #백그라운드로 실행
         thread = threading.Thread(
-            target=self._update_hypothesis,
+            target=self._update_hypothesis_and_save_research,
             args=(research_with_gaps, new_hypo.id),
             daemon=True
         )

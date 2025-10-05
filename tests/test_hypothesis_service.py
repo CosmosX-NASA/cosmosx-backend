@@ -6,6 +6,7 @@ from repository.hypothesis_research_repository import HypothesisResearchReposito
 from repository.research_gaps_repository import ResearchGapsRepository
 from prompt.resolver.hypothesis_prompt_resolver import HypothesisPromptResolver
 from client.open_ai_client import OpenAiClient
+from repository.research_repository import ResearchRagRepository
 from service.hypothesis_service import HypothesisService
 from dto.hypothesis_dto import HypothesisDoneCountResponse
 
@@ -55,11 +56,13 @@ def test_get_done_hypothesis_count_with_results(db_session, sample_hypotheses):
     research_gaps_repo = ResearchGapsRepository(db_session)
     prompt_resolver = HypothesisPromptResolver()
     openai_client = OpenAiClient(prompt_resolver=prompt_resolver)
+    research_repository = ResearchRagRepository(db_session)
     service = HypothesisService(
         hypothesis_repo,
         hypothesis_research_repo,
         research_gaps_repo,
-        openai_client
+        openai_client,
+        research_repository
     )
 
     # When
@@ -78,11 +81,14 @@ def test_get_done_hypothesis_count_different_user(db_session, sample_hypotheses)
     research_gaps_repo = ResearchGapsRepository(db_session)
     prompt_resolver = HypothesisPromptResolver()
     openai_client = OpenAiClient(prompt_resolver=prompt_resolver)
+    research_repository = ResearchRagRepository(db_session)
+
     service = HypothesisService(
         hypothesis_repo,
         hypothesis_research_repo,
         research_gaps_repo,
-        openai_client
+        openai_client,
+        research_repository
     )
 
     # When
@@ -101,11 +107,14 @@ def test_get_done_hypothesis_count_no_results(db_session, sample_hypotheses):
     research_gaps_repo = ResearchGapsRepository(db_session)
     prompt_resolver = HypothesisPromptResolver()
     openai_client = OpenAiClient(prompt_resolver=prompt_resolver)
+    research_repository = ResearchRagRepository(db_session)
+
     service = HypothesisService(
         hypothesis_repo,
         hypothesis_research_repo,
         research_gaps_repo,
-        openai_client
+        openai_client,
+        research_repository
     )
 
     # When
@@ -124,11 +133,13 @@ def test_get_done_hypothesis_count_empty_db(db_session):
     research_gaps_repo = ResearchGapsRepository(db_session)
     prompt_resolver = HypothesisPromptResolver()
     openai_client = OpenAiClient(prompt_resolver=prompt_resolver)
+    research_repository = ResearchRagRepository(db_session)
     service = HypothesisService(
         hypothesis_repo,
         hypothesis_research_repo,
         research_gaps_repo,
-        openai_client
+        openai_client,
+        research_repository
     )
 
     # When
@@ -154,11 +165,14 @@ def test_get_done_hypothesis_count_only_pending(db_session):
     research_gaps_repo = ResearchGapsRepository(db_session)
     prompt_resolver = HypothesisPromptResolver()
     openai_client = OpenAiClient(prompt_resolver=prompt_resolver)
+    research_repository = ResearchRagRepository(db_session)
+
     service = HypothesisService(
         hypothesis_repo,
         hypothesis_research_repo,
         research_gaps_repo,
-        openai_client
+        openai_client,
+        research_repository
     )
 
     # When
