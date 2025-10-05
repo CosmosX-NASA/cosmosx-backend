@@ -2,6 +2,7 @@ from typing import List, Optional, Dict
 from pydantic import BaseModel
 from model import Figure, Research
 
+
 class FigureResponse(BaseModel):
     url: str
     caption: str
@@ -9,14 +10,18 @@ class FigureResponse(BaseModel):
     @classmethod
     def from_model(cls, figure: Figure):
         return cls(
-            url = figure.url,
-            caption = figure.caption
+            url=figure.url,
+            caption=figure.caption
         )
+
 
 class ResearchResponse(BaseModel):
     id: int
     title: str
     journal: str
+    doi: str
+    author: str
+    release_date: str
     brief_summary: str
     overall_summary: str
     figures: Optional[List[FigureResponse]] = None
@@ -29,11 +34,14 @@ class ResearchResponse(BaseModel):
             id=research.id,
             title=research.title,
             journal=research.journal,
+            doi=research.doi,
+            author=research.author,
+            release_date=research.release_date,
             brief_summary=research.brief_summary,
             overall_summary=research.overall_summary,
             methods=research.methods,
             results=research.results,
-            figures = (
+            figures=(
                 [FigureResponse.from_model(fig) for fig in figures]
                 if figures
                 else None
