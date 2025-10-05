@@ -1,4 +1,3 @@
-from openai import NotFoundError
 from sqlalchemy.orm import Session
 
 from dto.hypothesis_dto import HypothesisAiResponse
@@ -23,7 +22,7 @@ class HypothesisRepository:
     def get_by_id(self, hypo_id: int) -> Hypothesis:
         foundHypo = self.db.query(Hypothesis).filter(Hypothesis.id == hypo_id).first()
         if foundHypo is None:
-            raise NotFoundError("Hypothesis not found")
+            print("Hypothesis not found")
         return foundHypo
 
     def update(self, ai_response: HypothesisAiResponse, hypo_id : int):
