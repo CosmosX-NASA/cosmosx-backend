@@ -24,9 +24,13 @@ class ResearchWithGaps(BaseModel):
             for gap in self.gaps
         ]
         return """
-            reserach summary: {summary}
+            reserach summary: {summary},
+            research methods: {methods},
+            research result: {result},
             reserach gaps: {gaps}
         """.format(
             summary=self.research.overall_summary,
+            methods=self.research.methods,
+            result= self.research.results,
             gaps=gaps_json
         )
