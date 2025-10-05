@@ -17,8 +17,8 @@ class HypothesisPromptResolver:
 
     def resolve_hypothesis_create_prompt(self, research_with_gaps : List[ResearchWithGaps]) -> str:
         prompt_template = self._load_prompt("prompt/create_hypothesis_prompt.txt")
-        research_with_gaps = ' '.join([research_with_gap.get_prompt_summary() for research_with_gap in research_with_gaps])
-        prompt = prompt_template.format(research_and_gaps=research_with_gaps)
+        research_with_gaps = '\n\n'.join([research_with_gap.get_prompt_summary() for research_with_gap in research_with_gaps])
+        prompt = prompt_template.replace("{research_and_gaps}", research_with_gaps)
         print(prompt) # 로깅
         return prompt
 
