@@ -1,5 +1,8 @@
 from typing import List
 from pathlib import Path
+
+from prompt_toolkit.key_binding.bindings.named_commands import reverse_search_history
+
 from model import ResearchWithGaps
 
 
@@ -13,7 +16,9 @@ class HypothesisPromptResolver:
         return full_path.read_text(encoding="utf-8")
 
     def resolve_hypothesis_create_prompt(self, research_with_gaps : List[ResearchWithGaps]) -> str:
-        prompt = self._load_prompt("prompt/create_hypothesis_prompt.txt")
+        prompt_template = self._load_prompt("prompt/create_hypothesis_prompt.txt")
+        research_with_gaps = ' '.join([research_with_gap.get_prompt_summary() for research_with_gap in research_with_gaps])
+        prompt = prompt_template.format(research_and_gaps=research_with_gaps)
         print(prompt) # 로깅
         return prompt
 

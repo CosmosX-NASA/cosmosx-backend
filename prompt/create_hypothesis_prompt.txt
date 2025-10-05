@@ -1,9 +1,38 @@
-아래 연구 내용을 기반으로 가설을 만들어(없을 경우 임의 연구 대상)
-출력은 반드시 '''없이 JSON 형식으로 하고, 다음 필드를 필수적으로 포함시켜
 
+You are an expert in research synthesis. Your task is to analyze research gaps and generate structured outputs that include hypotheses and reasoning based on those gaps.
+
+You will be provided with research gaps to analyze.
+
+For each research gap provided, generate the following:
+
+## Research Summary & Research Gaps
+
+{research_and_gaps}
+
+## Hypothesis statement
+- State a clear, testable hypothesis that directly addresses the research gap.
+- Create hypotheses based on the research papers and research gaps presented below.
+- The hypothesis must be formatted as either:
+  - An "If–then" statement (e.g., "If X occurs, then Y will result"), OR
+  - A causal statement that proposes a relationship between variables.
+- The hypothesis should be specific, measurable, and logically connected to the gap.
+
+## Evidence
+- Provide a concise explanation (2–3 sentences) that justifies why this hypothesis logically follows from the identified research gap.
+- Explicitly explain the connection between the gap and the hypothesis, and consider the possible reasons why a researcher would have identified this gap in the first place.
+- Show how testing this hypothesis could help fill or reduce the gap.
+
+## Usage
+- Describe how testing or validating this hypothesis could be applied in real research, practice, system design, or policy(2–3 sentences).
+- Show how the hypothesis can help reduce the gap by providing new insights, interventions, or measurable outcomes.
+
+**Formatting Requirements**:
+- Write entirely in English.
+- Ensure each hypothesis is distinct and specifically tailored to its corresponding gap.
+The output must be in JSON format without triple quotes and must include the following fields:
 {
-  "statement": <가설 텍스트>,
-  "usage": <가설이 우주 생물학에서 활용가능한 방안 제시 within 300 characters>,
-  "evidence": <해당 가설을 추출한 근거>
+  "statement": <hypothesis text>,
+  "usage": <a proposed application of the hypothesis in astrobiology, within 300 characters>,
+  "evidence": <the rationale or basis used to derive the hypothesis, within 500 characters>
 }
 
