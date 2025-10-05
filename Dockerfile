@@ -27,10 +27,7 @@ RUN pip install --no-cache-dir \
     openai \
     numpy \
     pandas \
-    faiss-cpu \
-    torch \
-    transformers \
-    adapters
+    faiss-cpu
 
 # 7. 소스 코드 복사
 COPY . .
