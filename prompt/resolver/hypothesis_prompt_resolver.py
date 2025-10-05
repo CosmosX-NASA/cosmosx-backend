@@ -1,8 +1,6 @@
 from typing import List
 from pathlib import Path
 
-from prompt_toolkit.key_binding.bindings.named_commands import reverse_search_history
-
 from model import ResearchWithGaps
 
 
