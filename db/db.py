@@ -26,40 +26,46 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 
 
 # 4. 테이블 생성
+create_tables = False
 try:
-    db_base.metadata.create_all(engine)
-    print("테이블 생성 성공")
-    print(f"Database path: {DB_PATH}")
-    print("현재 metadata 등록된 테이블:", db_base.metadata.tables.keys())
+    if not os.path.exists(DB_PATH):
+        db_base.metadata.create_all(engine)
+        print("테이블 생성 성공")
+        print(f"Database path: {DB_PATH}")
+        print("현재 metadata 등록된 테이블:", db_base.metadata.tables.keys())
+        create_tables = True
 except Exception as e:
     print(f"테이블 생성 실패: {e}")
 
-try:
-    time.sleep(1)  # 잠시 대기
-    populate_sql_path = os.path.join(os.getcwd(), "populate.sql")
-    if os.path.exists(populate_sql_path):
-        with open(populate_sql_path, "rb") as sql_file:
-            subprocess.run([
-                "sqlite3",
-                DB_PATH,
-            ], stdin=sql_file, check=True)
-        print("기본 데이터 삽입 완료(1/2)")
-    else:
-        print(f"populate.sql 파일을 찾을 수 없습니다: {populate_sql_path}")
+if create_tables:
+    try:
+        time.sleep(1)  # 잠시 대기
+        populate_sql_path = os.path.join(os.getcwd(), "populate.sql")
+        if os.path.exists(populate_sql_path):
+            with open(populate_sql_path, "rb") as sql_file:
+                subprocess.run([
+                    "sqlite3",
+                    DB_PATH,
+                ], stdin=sql_file, check=True)
+            print("기본 데이터 삽입 완료(1/2)")
+        else:
+            print(f"populate.sql 파일을 찾을 수 없습니다: {populate_sql_path}")
 
-    time.sleep(1)  # 잠시 대기
-    populate_sql_path = os.path.join(os.getcwd(), "insert_research_gaps.sql")
-    if os.path.exists(populate_sql_path):
-        with open(populate_sql_path, "rb") as sql_file:
-            subprocess.run([
-                "sqlite3",
-                DB_PATH,
-            ], stdin=sql_file, check=True)
-        print("기본 데이터 삽입 완료(2/2)")
-    else:
-        print(f"insert_research_gaps.sql 파일을 찾을 수 없습니다: {populate_sql_path}")
-except Exception as e:
-    print(f"기본 데이터 삽입 실패: {e}")
+        time.sleep(1)  # 잠시 대기
+        populate_sql_path = os.path.join(
+            os.getcwd(), "insert_research_gaps.sql")
+        if os.path.exists(populate_sql_path):
+            with open(populate_sql_path, "rb") as sql_file:
+                subprocess.run([
+                    "sqlite3",
+                    DB_PATH,
+                ], stdin=sql_file, check=True)
+            print("기본 데이터 삽입 완료(2/2)")
+        else:
+            print(
+                f"insert_research_gaps.sql 파일을 찾을 수 없습니다: {populate_sql_path}")
+    except Exception as e:
+        print(f"기본 데이터 삽입 실패: {e}")
 
 # 5. 세션 생성기 설정
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
