@@ -25,8 +25,25 @@ router = APIRouter(
     summary = "Research Gap을 조합해 가설 만들기",
     response_model = HypothesisCreateResponse
 )
-def create_hypothesis(request: HypothesisCreateRequest = Body(...)):
-    return HypothesisCreateResponse()
+def create_hypothesis(
+        request: HypothesisCreateRequest = Body(...),
+        db: Session = Depends(get_db_session)
+):
+    hypothesis_repository = HypothesisRepository(db)
+    hypothesis_research_repository = HypothesisResearchRepository(db)
+    research_gaps_repository = ResearchGapsRepository(db)
+    research_repository = ResearchRagRepository(db)
+    prompt_resolver = HypothesisPromptResolver()
+    openai_client = OpenAiClient(prompt_resolver)
+
+    hypothesis_service = HypothesisService(
+        hypothesis_repository,
+        hypothesis_research_repository,
+        research_gaps_repository,
+        openai_client,
+        research_repository,
+    )
+    return hypothesis_service.create_hypothesis(request=request)
 
 @router.get(
     "/me",
